@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <title>Meropenem Renal Dosing</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MeroDose">
+    <link rel="apple-touch-icon" href="icon.png">
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: #f3f4f6;
+          margin: 0;
+          padding: 2rem;
+          display: flex;
+          justify-content: center;
+          min-height: 100dvh;
+          box-sizing: border-box;
+        }
+        .container {
+          background: white;
+          width: min(94vw, 560px);
+          padding: clamp(1rem, 2vw + 0.5rem, 2rem);
+          border-radius: 12px;
+          box-shadow: 0 4px 15px rgb(0 0 0 / 0.1);
+          position: relative;
+        }
+        h1 {
+          text-align: center;
+          margin-bottom: 0.2rem;
+          font-weight: 900;
+          color: #1e40af;
+        }
+        small.madeBy {
+          display: block;
+          text-align: right;
+          font-size: 0.8rem;
+          color: #666;
+          margin-bottom: 1.5rem;
+          font-style: italic;
+        }
+        label {
+          display: block;
+          margin-bottom: 0.3rem;
+          font-weight: 600;
+        }
+        input[type="number"], select {
+          width: 100%;
+          padding: 0.5rem 0.75rem;
+          font-size: 1rem;
+          border-radius: 6px;
+          border: 1px solid #ccc;
+          margin-bottom: 1rem;
+          box-sizing: border-box;
+          transition: border-color 0.2s ease;
+        }
+        input[type="number"]:focus, select:focus {
+          border-color: #2563eb;
+          outline: none;
+        }
+        #isObeseContainer {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 0.2rem;
+          margin-bottom: 1rem;
+        }
+        #isObeseContainer label {
+          margin: 0;
+          font-weight: 700;
+          color: black;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          user-select: none;
+          cursor: pointer;
+        }
+        #isObeseContainer input[type="checkbox"] {
+          margin: 0;
+          cursor: pointer;
+          width: 18px;
+          height: 18px;
+        }
+        #bmiContainer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.8rem;
+        }
+        #bmiResult {
+          font-weight: 700;
+          min-width: 140px;
+          text-align: left;
+        }
+        #bmiResult.obese {
+          color: #b91c1c;
+        }
+        #adjbwResult {
+          margin: 2px 0;
+          line-height: 1.4;
+        }
+        button {
+          background-color: #2563eb;
+          color: white;
+          border: none;
+          padding: 0.5rem 1.25rem;
+          font-size: 1rem;
+          font-weight: 700;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+          user-select: none;
+        }
+        button:hover:not(:disabled) {
+          background-color: #1d4ed8;
+        }
+        button:disabled {
+          background-color: #9ca3af;
+          cursor: not-allowed;
+        }
+        #bmiBox {
+          background-color: #f3f4f6;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          padding: 0.6rem 0.8rem;
+          font-size: 0.9rem;
+          font-weight: 600;
+          width: 100%;
+          box-sizing: border-box;
+          text-align: left;
+        }
+        #bmiResult.obese {
+          color: #b91c1c;
+        }
+        #heightHint {
+          font-size: 0.85rem;
+          font-weight: 400;
+          color: red;
+          font-style: normal;
+          letter-spacing: 0.5px;
+          display: inline;
+          margin-left: 4px;
+        }
+        #refModal h2, #refModal h4 {
+          margin: 0.5rem 0;
+          font-size: 1.15rem;
+        }
+        #refModal p,
+        #refModal li {
+          font-size: 0.9rem;
+          line-height: 1.4;
+          margin: 0.4rem 0;
+        }
+        #refModal ul {
+          padding-left: 1.2rem;
+        }
+        #refModal .content {
+          padding: 1rem;
+        }
+        #refModal .disclaimer {
+          font-size: 0.85rem;
+          color: #b91c1c;
+          margin-top: 1rem;
+        }
+
+        /* ARC Modal */
+        #arcModal {
+          position: fixed;
+          inset: 0;
+          z-index: 2000;
+          display: none;
+        }
+        #arcModalBackdrop {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.4);
+        }
+        #arcModalBox {
+          position: relative;
+          max-width: 420px;
+          width: calc(100% - 3rem);
+          margin: 10vh auto;
+          background: #fff;
+          border-radius: 10px;
+          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+          padding: 1rem 1.2rem 1.5rem;
+          font-size: 0.92rem;
+          line-height: 1.45;
+          text-align: left;
+        }
+        #arcModalTitle {
+          margin: 0 0 8px;
+          font-size: 1.05rem;
+          font-weight: 700;
+          color: #1e3a8a;
+        }
+        #arcModalBody p {
+          margin: 0 0 10px;
+        }
+        #arcModalClose,
+        #arcModalOk {
+          position: absolute;
+          top: 8px;
+          right: 10px;
+          background: #ef4444;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 0.85rem;
+          padding: 0.25rem 0.6rem;
+          cursor: pointer;
+        }
+        #arcModalOk {
+          position: static;
+          display: block;
+          margin: 0 auto;
+          background: #2563eb;
+          padding: 0.4rem 1rem;
+          border-radius: 8px;
+          font-weight: 600;
+          margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+        <button
+                onclick="document.getElementById('reviewersModal').style.display='block'"
+                style="font-size: 0.8rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: #e5e7eb; color: #1f2937; font-weight: 700;"
+        >
+            Reviewers
+        </button>
+        <button
+                onclick="document.getElementById('refModal').style.display='block'"
+                style="font-size: 0.8rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: #e5e7eb; color: #1f2937; font-weight: 700;"
+        >
+            About
+        </button>
+    </div>
+
+    <h1>MeroDoseCalc</h1>
+    <small class="madeBy">Developed by Saad Al Hamady</small>
+
+    <label for="age">Age (years)</label>
+    <input id="age" type="number" min="0" step="1" placeholder="Enter age in years" />
+
+    <label for="gender">Gender</label>
+    <select id="gender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+    </select>
+
+    <label for="weight">Weight (kg)</label>
+    <input
+            id="weight"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="any"
+            placeholder="Enter weight in kilogram"
+    />
+
+    <label for="height">
+        Height (meters)
+        <small id="heightHint" style="color:red; display:inline;">(Required if pediatrics or suspected obesity)</small>
+    </label>
+    <input
+            id="height"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="any"
+            placeholder="Enter height in meter"
+    />
+
+    <div id="bmiContainer">
+        <div id="bmiBox">
+            <div id="bmiResult">BMI : —</div>
+            <div id="adjbwResult">AdjBW: —</div>
+        </div>
+    </div>
+
+    <div id="isObeseContainer" style="display:none;">
+        <input type="checkbox" id="isObese" />
+        <label for="isObese">Obese</label>
+    </div>
+
+    <label for="dialysisSelect">Clearance/Dialysis Status:</label>
+    <select id="dialysisSelect">
+        <option value="none">Not on Dialysis</option>
+        <option value="hd">Hemodialysis</option>
+        <option value="pd">Peritoneal Dialysis</option>
+        <option value="crrt">CRRT</option>
+        <option value="pirrt">PIRRT</option>
+        <option value="arc" disabled hidden>Augmented Renal Clearance (ARC)</option>
+    </select>
+
+    <label for="scr">Serum Creatinine (mg/dL)</label>
+    <input
+            id="scr"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="any"
+            placeholder="Enter serum creatinine in mg/dL"
+    />
+
+    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+        <button id="calcBtn">Calculate Dose</button>
+        <button id="clearBtn" style="background-color: #ef4444;">Clear</button>
+    </div>
+
+    <div id="resultCard" style="display:none; margin-top:1rem;">
+        <p><strong><span id="crclLabel">Estimated CrCl (mL/min):</span></strong> <span id="crcl"></span></p>
+        <p><strong>Formula Used:</strong> <span id="formulaUsed"></span></p>
+        <p id="extraInfo" style="display:none;"><strong>Note:</strong> <span></span></p>
+        <p id="doseParagraph"><strong>Recommended Dose:</strong> <span id="dose"></span></p>
+
+        <div id="mcrclSection" style="display:none; margin-top: 1rem; padding: 1rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <h4 style="margin-top: 0; color: #1e40af; margin-bottom: 0.4rem; font-size: 0.95rem;">Confirm ARC (Measured CrCl)</h4>
+            <p style="font-size: 0.8rem; color: #4b5563; margin-bottom: 0.8rem; line-height: 1.3;">Enter 8–24 hour urine collection data below to calculate mCrCl.</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.8rem;">
+                <div>
+                    <label for="mTime" style="font-size: 0.8rem; margin-bottom: 2px;">Time (Hours)</label>
+                    <input id="mTime" type="number" inputmode="decimal" placeholder="e.g. 12" style="margin-bottom: 0; padding: 0.35rem; font-size: 0.9rem;" />
+                </div>
+                <div>
+                    <label for="mVol" style="font-size: 0.8rem; margin-bottom: 2px;">Volume (mL)</label>
+                    <input id="mVol" type="number" inputmode="decimal" placeholder="e.g. 1200" style="margin-bottom: 0; padding: 0.35rem; font-size: 0.9rem;" />
+                </div>
+                <div>
+                    <label for="mUcr" style="font-size: 0.8rem; margin-bottom: 2px;">Urine Cr (mg/dL)</label>
+                    <input id="mUcr" type="number" inputmode="decimal" placeholder="e.g. 80" style="margin-bottom: 0; padding: 0.35rem; font-size: 0.9rem;" />
+                </div>
+                <div>
+                    <label for="mScrLocal" style="font-size: 0.8rem; margin-bottom: 2px;">Serum Cr (mg/dL)</label>
+                    <input id="mScrLocal" type="number" inputmode="decimal" placeholder="e.g. 0.8" style="margin-bottom: 0; padding: 0.35rem; font-size: 0.9rem;" />
+                </div>
+            </div>
+
+            <button onclick="calculateMCrClLocal()" style="width: 100%; padding: 0.4rem; font-size: 0.9rem;">Calculate mCrCl</button>
+
+            <div id="mResultLocal" style="display:none; margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid #d1d5db; font-size: 0.9rem;">
+                <p style="margin: 0 0 4px 0;"><strong>mCrCl:</strong> <span id="localMCrClVal"></span> mL/min</p>
+                <p style="margin: 0 0 4px 0;"><strong>BSA (Mosteller):</strong> <span id="localMBsaVal"></span></p>
+                <p style="margin: 0 0 8px 0;"><strong>Normalized:</strong> <span id="localMNormVal" style="color:#2563eb; font-weight:bold;"></span> mL/min/1.73m&sup2;</p>
+                <div id="localMArcDiag" style="font-weight: bold; line-height: 1.4; margin-top: 8px;"></div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<!-- Reviewers Modal -->
+<div
+        id="reviewersModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; padding:2rem; box-sizing:border-box;"
+>
+    <div
+            style="background:white; max-width:700px; margin:auto; border-radius:12px; padding:1.5rem; position:relative; max-height:90vh; overflow:auto;"
+    >
+        <button
+                onclick="document.getElementById('reviewersModal').style.display='none'"
+                style="position:absolute; top:10px; right:14px; background:#ef4444; color:white; border:none; padding:0.3rem 0.6rem; border-radius:6px; cursor:pointer;"
+        >
+            X
+        </button>
+        <h2 style="margin-top:0;">Reviewers & Acknowledgments</h2>
+        <p><strong>Developed by:</strong> Saad Al Hamady, Clinical Pharmacist – Basra, Iraq</p>
+    </div>
+</div>
+
+<!-- About Modal -->
+<div
+        id="refModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999; padding:2rem; box-sizing:border-box;"
+>
+    <div
+            style="background:white; max-width:600px; margin:auto; border-radius:12px; position:relative; max-height:90vh; overflow:auto;"
+            class="content"
+    >
+        <button
+                onclick="document.getElementById('refModal').style.display='none'"
+                style="position:absolute; top:10px; right:14px; background:#ef4444; color:white; border:none; padding:0.3rem 0.6rem; border-radius:6px; cursor:pointer;"
+        >
+            X
+        </button>
+        <h2 style="margin-top:0;">About This Tool</h2>
+        <p>
+            <strong>MeroDoseCalc – Meropenem Renal Function Reference Tool</strong><br /><br />
+            MeroDoseCalc is an <strong>educational reference application</strong> developed to help healthcare learners
+            and professionals understand how renal function can influence meropenem dosing in adults and pediatric patients.
+            <br /><br />
+            The tool allows users to explore <strong>weight-based, age-specific, and renal function–related examples</strong>
+            of dose adjustment, including scenarios such as dialysis and augmented renal clearance (ARC). It is intended for
+            <strong>educational and informational purposes only</strong> and does <strong>not</strong> provide
+            patient-specific treatment recommendations or medical advice.
+        </p>
+        <h4>Features</h4>
+        <ul style="line-height:1.6;">
+            <li>Demonstrates meropenem dose adjustment principles using user-entered data</li>
+            <li>Supports pediatric (Schwartz equation) and adult (Cockcroft–Gault) renal function estimation</li>
+            <li>Shows how Adjusted Body Weight (AdjBW) is used in obesity for learning purposes</li>
+            <li>Includes reference information for CRRT, ARC, and common dialysis modalities</li>
+            <li>Presents examples consistent with current published guidelines and literature for educational context</li>
+        </ul>
+        <h4>Equations Used</h4>
+        <ul style="line-height:1.6;">
+            <li><strong>Pediatric (Schwartz equation)</strong>: 0.413 × (Height in cm / Serum creatinine in mg/dL)</li>
+            <li>
+                <strong>Adult (Cockcroft–Gault formula)</strong>:
+                ((140 – age in years) × weight in kg × gender factor) ÷ (72 × Serum creatinine in mg/dL)
+                <br />
+                <em>Gender factor:</em> 1 for male, 0.85 for female
+            </li>
+            <li>
+                <strong>Adjusted Body Weight (AdjBW)</strong>: IBW + 0.4 × (Actual body weight – IBW)
+                <br />IBW for male: 50 + 2.3 × (height in inches – 60)
+                <br />IBW for female: 45.5 + 2.3 × (height in inches – 60)
+            </li>
+        </ul>
+        <h4>Reference</h4>
+        <p>All dosing recommendations are derived from the latest version of <em>UpToDate</em> (Accessed: August 2025).</p>
+        <p style="color:#b91c1c;">
+            <strong>Disclaimer:</strong><br />
+            MeroDoseCalc is an <strong>educational reference tool only</strong> and is intended
+            <strong>solely for learning and demonstration purposes</strong>.<br /><br />
+            It is <strong>not a medical device</strong> and <strong>must not be used to make patient-specific clinical,
+            diagnostic, or therapeutic decisions</strong>.<br /><br />
+            The content, formulas, and examples provided are simplified educational representations based on published
+            literature and should <strong>not be interpreted as clinical guidance or dosing recommendations</strong>.<br /><br />
+            Always consult <strong>official institutional protocols, product labeling, or national guidelines</strong> for
+            medical decision-making.<br /><br />
+            This application <strong>does not collect, store, or process any personal or health-related data</strong>.
+        </p>
+        <p style="font-size:0.9rem; margin-top:2rem; font-style:italic;">Last updated: August 2025</p>
+    </div>
+</div>
+
+<!-- ARC Info Modal (separate, outside refModal) -->
+<div id="arcModal" aria-hidden="true" role="dialog" style="display:none;">
+    <div id="arcModalBackdrop"></div>
+    <div
+            id="arcModalBox"
+            role="document"
+            aria-labelledby="arcModalTitle"
+            aria-describedby="arcModalBody"
+            tabindex="-1"
+    >
+        <button id="arcModalClose" aria-label="Close">×</button>
+        <h3 id="arcModalTitle">Augmented Renal Clearance (ARC)</h3>
+        <div id="arcModalBody"></div>
+    </div>
+</div>
+
+<script>
+    // DOM references
+    // --- COMPLETE ADULT STANDARD DOSING DATA ---
+const adultStandardDoses = {
+  general: {
+    title: "Dosage Guidance & Usual Range",
+    content: "<strong>Infusion method:</strong> Dosing is presented based on the traditional infusion method over 30 minutes, unless otherwise specified.<br><br><strong>Clinical considerations:</strong> A prolonged infusion strategy (ie, extended or continuous infusion) has a greater likelihood of attaining pharmacokinetic/pharmacodynamic targets and may offer clinical benefit in patients with severe infections or less susceptible pathogens[cite: 1].<br><br><strong>Usual dosage range:</strong><br><strong>Traditional intermittent infusion method (over 30 minutes):</strong> IV: 500 mg every 6 hours or 1 to 2 g every 8 hours; 500 mg every 6 hours achieves comparable pharmacokinetic and pharmacodynamic parameters to 1 g every 8 hours[cite: 1].<br><br><strong>Extended infusion method (off-label):</strong> IV: 1 to 2 g every 8 hours over 3 hours. May give a loading dose of 1 to 2 g over 30 minutes, especially when rapid attainment of therapeutic drug concentrations is desired (eg, sepsis)[cite: 1]. Some experts recommend 2 g every 8 hours over 3 hours for treatment of infections caused by certain resistant organisms (eg, carbapenem-resistant Acinetobacter baumannii, carbapenem-resistant Enterobacterales)[cite: 1].<br><br><strong>Continuous infusion method (off-label):</strong> IV: 2 g every 8 hours over 8 hours or 3 g every 12 hours over 12 hours[cite: 1]. May give a loading dose of 1 to 2 g over 30 minutes, especially when rapid attainment of therapeutic drug concentrations is desired (eg, sepsis)[cite: 1]."
+  },
+  anthrax: {
+    title: "Anthrax, systemic, treatment",
+    content: "<strong>Anthrax, systemic (including meningitis), treatment (off-label use):</strong><br>Note: Consult public health officials for event-specific recommendations.<br><br>IV: 2 g every 8 hours, in combination with other appropriate agents for ≥2 weeks; duration may be shortened and patient transitioned to oral therapy based on response and clinical judgment[cite: 1]. Some experts suggest ≥3 weeks of IV combination therapy for patients with meningitis[cite: 1]. After aerosol exposure, transition patients who are immunocompromised from treatment to postexposure prophylaxis; combined duration should total 60 days. Note: Administer antitoxin in addition to antibiotics for systemic anthrax[cite: 1]."
+  },
+  bloodstream: {
+    title: "Bloodstream infection",
+    content: "<strong>Bloodstream infection (including catheter related) (off-label use):</strong><br>Note: For empiric therapy of known or suspected gram-negative organisms (including Pseudomonas aeruginosa) or pathogen-directed therapy for organisms resistant to other agents[cite: 1].<br><br>IV: 1 to 2 g every 8 hours[cite: 1]; for critical illness or infection with an organism with an elevated minimum inhibitory concentration (MIC), some experts prefer the extended or continuous infusion method and/or increasing the dose to 2 g every 8 hours[cite: 1]. Note: For empiric therapy in patients with neutropenia, severe burns, or septic shock, give as part of an appropriate combination regimen[cite: 1].<br><br><strong>Duration of therapy:</strong> Usual duration is 7 to 14 days depending on the source, pathogen, extent of infection, and clinical response; a 7-day duration is recommended for patients with uncomplicated Enterobacterales infection who respond appropriately to antibiotic therapy[cite: 1]. Note: If neutropenic, extend treatment until afebrile for 2 days and neutrophil recovery (ANC ≥500 cells/mm3 and increasing)[cite: 1]. For P. aeruginosa bacteremia in neutropenic patients, some experts treat for a minimum of 14 days and until recovery of neutrophils[cite: 1]."
+  },
+  cf: {
+    title: "Cystic fibrosis, acute pulmonary exacerbation",
+    content: "<strong>Cystic fibrosis, acute pulmonary exacerbation (off-label use):</strong> For empiric or targeted therapy for P. aeruginosa or other gram-negative bacilli.<br><br>IV: 2 g every 8 hours, most often given as part of an appropriate combination regimen[cite: 1]. Note: Some experts prefer the extended or continuous infusion method to optimize exposure[cite: 1].<br><br><strong>Duration of therapy:</strong> Duration is usually 10 to 14 days depending on clinical response[cite: 1]."
+  },
+  dfi: {
+    title: "Diabetic foot infection, moderate to severe",
+    content: "<strong>Diabetic foot infection, moderate to severe (off-label use):</strong> As a component of empiric therapy in patients at risk for P. aeruginosa (eg, macerated ulcer, warm climate) or other gram-negative bacteria resistant to other agents[cite: 1].<br><br>IV: 1 g every 8 hours. Duration (which may include oral step-down therapy) is usually 2 to 4 weeks in the absence of osteomyelitis[cite: 1]."
+  },
+  iai: {
+    title: "Intra-abdominal infection, health care–associated or high-risk community-acquired",
+    content: "Note: For community-acquired infection, reserve for patients who cannot tolerate a beta-lactam or are at risk for infection with an extended-spectrum beta-lactamase (ESBL)-producing organism (eg, known colonization or prior infection with an ESBL-producing organism)[cite: 1].<br><br><strong>Cholecystitis, acute uncomplicated:</strong> IV: 1 g every 8 hours; continue for 1 day after gallbladder removal or until clinical resolution in patients managed nonoperatively[cite: 1].<br><br><strong>Other intra-abdominal infection (eg, cholangitis, complicated cholecystitis, appendicitis, diverticulitis, intra-abdominal abscess):</strong> IV: 1 g every 8 hours. Total duration of therapy (which may include transition to oral antibiotics) is 4 to 5 days following adequate source control[cite: 1]. For diverticulitis or uncomplicated appendicitis managed without intervention, duration varies from 4 to 14 days depending on disease extent, response, and immune status[cite: 1]; for perforated appendicitis managed with laparoscopic appendectomy, 2 to 4 days may be sufficient[cite: 1]. Note: For patients who are critically ill or at high risk for infection with drug-resistant pathogens, some experts favor the extended or continuous infusion method[cite: 1]."
+  },
+  intracranial: {
+    title: "Intracranial abscess and spinal epidural abscess",
+    content: "<strong>Intracranial abscess (brain abscess, intracranial epidural abscess) or spinal epidural abscess (off-label use):</strong> As a component of empiric or directed therapy in patients at risk for P. aeruginosa or other resistant gram-negative bacteria (eg, neurosurgical or immunocompromised patients).<br><br>IV: 2 g every 8 hours as part of an appropriate combination regimen; duration generally ranges from 4 to 8 weeks for spinal epidural abscess and 6 to 8 weeks for brain abscess and intracranial epidural abscess[cite: 1]."
+  },
+  melioidosis: {
+    title: "Melioidosis or glanders",
+    content: "<strong>Melioidosis (Burkholderia pseudomallei infection) or glanders (B. mallei infection) (off-label use):</strong> Initial intensive therapy: IV: 1 g every 8 hours for 14 days; a longer duration may be necessary depending on disease severity and site of infection[cite: 1]. Some experts recommend 2 g every 8 hours for patients with neurological involvement and adding sulfamethoxazole and trimethoprim for patients with focal disease of the CNS, prostate, bone, joint, skin, or soft tissue[cite: 1]. Note: Following the course of parenteral therapy, eradication therapy with oral antibiotics for ≥12 weeks is recommended[cite: 1]."
+  },
+  meningitis: {
+    title: "Meningitis, bacterial",
+    content: "<strong>Meningitis, bacterial:</strong> As a component of empiric therapy for health care-associated infections or infections in immunocompromised patients, or as pathogen-specific therapy for gram-negative bacteria resistant to other antibiotics (eg, P. aeruginosa, Acinetobacter spp.).<br><br>IV: 2 g every 8 hours. Treatment duration is 7 to 21 days depending on causative pathogen(s) and clinical response; 10 to 14 days is the minimum duration for gram-negative bacilli, although some experts prefer 21 days[cite: 1]. Note: Consider use of an extended or continuous infusion for more resistant pathogens[cite: 1]."
+  },
+  neutropenic: {
+    title: "Neutropenic fever, empiric therapy for high-risk patients with cancer",
+    content: "<strong>Neutropenic fever, empiric therapy for high-risk patients with cancer (off-label use):</strong> Note: Patients who are high risk are those expected to have an ANC ≤100 cells/mm3 for >7 days or an ANC ≤100 cells/mm3 for any expected duration if there are ongoing comorbidities (eg, sepsis, mucositis, significant hepatic or renal dysfunction)[cite: 1]; some experts use an ANC cutoff of <500 cells/mm3 to define patients who are high risk[cite: 1].<br><br>IV: 1 to 2 g every 8 hours. Additional agent(s) may be needed depending on clinical status[cite: 1]. Note: Some experts prefer the extended or continuous infusion method and/or increasing the dose to 2 g every 8 hours, particularly in those who are critically ill or at risk for infection with an organism with an elevated MIC[cite: 1].<br><br><strong>Duration of therapy:</strong> Duration is until afebrile for ≥48 hours and resolution of neutropenia (ANC ≥500 cells/mm3 and increasing) or standard duration for the specific infection identified, if longer than the duration of neutropenia[cite: 1]. Some experts consider discontinuation after ≥72 hours of treatment in patients who are hemodynamically stable and afebrile for at least 48 hours without a documented infection, regardless of marrow recovery[cite: 1]."
+  },
+  nocardiosis: {
+    title: "Nocardiosis, severe",
+    content: "<strong>Nocardiosis, severe (off-label use) (alternative agent):</strong><br>Note: Due to concerns for resistance, susceptibility testing should be performed on isolates[cite: 1].<br><br>IV: 1 to 2 g every 8 hours as part of an appropriate combination regimen[cite: 1]. Consult an infectious diseases specialist for specific treatment recommendations.<br><br><strong>Duration of therapy:</strong> Prolonged treatment is required (range: 6 months to ≥1 year [at least several weeks of parenteral therapy followed by oral therapy])[cite: 1]."
+  },
+  osteomyelitis: {
+    title: "Osteomyelitis and/or discitis",
+    content: "<strong>Osteomyelitis and/or discitis (off-label use):</strong> IV: 1 g every 8 hours; for empiric therapy, use as part of an appropriate combination regimen[cite: 1]. Duration of therapy is generally 6 weeks but depends on clinical response and presence of residual infection or hardware. Some patients who receive initial IV antibiotics can be transitioned to oral therapy to complete the course. Shorter courses are appropriate if the affected bone is completely resected by amputation[cite: 1]."
+  },
+  peritonitis_pd: {
+    title: "Peritonitis, treatment (peritoneal dialysis)",
+    content: "<strong>Peritonitis, treatment (peritoneal dialysis) (off-label route)</strong><br>Note: Intraperitoneal administration is preferred to IV administration unless the patient has sepsis[cite: 1].<br><br><strong>Intermittent (long dwell in automated peritoneal dialysis):</strong> Intraperitoneal: 500 mg added to the dialysate solution once daily. Allow to dwell ≥6 hours; longer dwell times of ~15 hours may be preferred to ensure adequate pharmacodynamic parameters for efficacy (ie, T>MIC)[cite: 1].<br><br><strong>Intermittent (CAPD):</strong> Intraperitoneal: 1 g added to the dialysate solution once daily; allow to dwell ≥6 hours[cite: 1].<br><br><strong>Continuous (with every CAPD exchange):</strong> Intraperitoneal: 125 mg/L with each dialysate exchange[cite: 1].<br><br><strong>Duration:</strong> For patients with adequate clinical response, duration of therapy is ≥3 weeks. For patients with no improvement after 5 days, remove catheter and treat with appropriate systemic antibiotics for 14 days after catheter removal[cite: 1]."
+  },
+  pneumonia: {
+    title: "Pneumonia",
+    content: "<strong>Community-acquired pneumonia:</strong> For empiric therapy of inpatients at risk of infection with a multidrug-resistant, gram-negative pathogen(s), including P. aeruginosa:<br>IV: 1 g every 8 hours as part of an appropriate combination regimen. Total duration (which may include oral step-down therapy) is 3 to 4 days for nonsevere infection and a minimum of 5 days for severe infection; a longer course may be required for patients with an immunocompromising condition, complicated infection, or for P. aeruginosa infection. Patients should be clinically stable with normal vital signs prior to discontinuation[cite: 1].<br><br><strong>Hospital-acquired or ventilator-associated pneumonia:</strong> For empiric therapy (often as part of an appropriate combination regimen) or pathogen-specific therapy for multidrug-resistant gram-negative pathogen(s) (eg, P. aeruginosa, Acinetobacter spp., extended-spectrum beta-lactamase-producing Enterobacterales):<br>IV: 1 g every 8 hours. Duration of therapy varies based on disease severity and response to therapy; treatment is typically given for 7 days[cite: 1]. Note: Some experts prefer extended or continuous infusion for critical illness or when treating a susceptible organism with an elevated MIC[cite: 1]."
+  },
+  pji: {
+    title: "Prosthetic joint infection",
+    content: "<strong>Prosthetic joint infection (pathogen-directed therapy for multidrug-resistant gram-negative bacilli, including P. aeruginosa) (off-label use):</strong> IV: 1 g every 8 hours; duration varies, but is generally 4 to 6 weeks for patients who undergo resection arthroplasty[cite: 1]."
+  },
+  sepsis: {
+    title: "Sepsis and septic shock",
+    content: "<strong>Sepsis and septic shock (broad-spectrum empiric therapy, including P. aeruginosa) (off-label use):</strong> IV: 1 to 2 g every 8 hours in combination with other appropriate agent(s)[cite: 1]. Initiate therapy as soon as possible once there is recognition of sepsis or septic shock. Duration is dependent on underlying source and patient response; short courses are preferred, when appropriate. Consider discontinuation if a noninfectious etiology is identified[cite: 1]. Note: Some experts prefer the extended or continuous infusion method and/or increasing the dose to 2 g every 8 hours, particularly in those at risk for infection with an organism with an elevated MIC[cite: 1]."
+  },
+  ssti: {
+    title: "Skin and soft tissue infection, moderate to severe",
+    content: "<strong>Skin and soft tissue infection, moderate to severe:</strong><br>Note: For patients with necrotizing infections, select surgical site infections (intestinal, GU tract), or patients with or at risk for pathogens resistant to other agents, including P. aeruginosa[cite: 1].<br><br>IV: 1 g every 8 hours; often used as part of an appropriate combination regimen. Usual duration (including oral step-down therapy) is 5 to 14 days based on severity and clinical response; for necrotizing infection, continue until further debridement is not necessary, patient has clinically improved, and patient is afebrile for ≥48 hours[cite: 1]."
+  },
+  sbp: {
+    title: "Spontaneous bacterial peritonitis",
+    content: "<strong>Spontaneous bacterial peritonitis (off-label use):</strong><br>Note: Reserve for patients who are critically ill or with risk for multidrug-resistance[cite: 1].<br><br>IV: 1 g every 8 hours for 5 to 7 days as long as fever and pain have resolved[cite: 1]."
+  },
+  uti: {
+    title: "Urinary tract infection, complicated",
+    content: "<strong>Urinary tract infection, complicated (pyelonephritis or urinary tract infection with systemic signs/symptoms) (off-label use):</strong><br>Note: Reserve for critically ill patients or for patients with risk factor(s) for MDR pathogens, including ESBL-producing organisms[cite: 1].<br><br>IV: 1 to 2 g every 8 hours[cite: 1]; reserve 2 g dose if concerned for MDR pathogen[cite: 1]. For patients with symptomatic improvement within the first ~48 hours of therapy, total duration is 5 to 7 days (7 days if therapy is completed with meropenem)[cite: 1]."
+  }
+};
+
+// Function to update the UI when the adult indication dropdown changes
+function updateAdultIndication(val) {
+  const data = adultStandardDoses[val];
+  const container = document.getElementById('adultIndicationContent');
+  if(container && data) {
+    container.innerHTML = `
+      <div style="margin-top: 0.8rem; padding: 1rem; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px;">
+        <h4 style="margin-top: 0; margin-bottom: 0.6rem; color: #1e40af; font-size: 1.05rem;">${data.title}</h4>
+        <div style="font-size: 0.92rem; color: #1f2937; line-height: 1.6;">
+            ${data.content}
+        </div>
+      </div>
+    `;
+  }
+}
+// --- END COMPLETE ADULT STANDARD DOSING DATA ---
+// --- COMPLETE PEDIATRIC STANDARD DOSING DATA ---
+function getPediatricStandardDoses(w) {
+  const wValid = !isNaN(w) && w > 0;
+
+  // Helper to format doses with max caps, dynamic calculations, and correct frequency placement
+  function doseStr(mg, freq, max) {
+    if (!wValid) {
+      return `<strong>${mg} mg/kg/dose ${freq}</strong>; maximum dose: ${max} mg/dose`;
+    }
+    const calc = Math.min(Math.round(mg * w), max);
+    return `<strong>${mg} mg/kg/dose</strong> <span style="color:#e11d48; font-weight:bold;">(${calc} mg based on entered weight)</span> <strong>${freq}</strong>; maximum dose: ${max} mg/dose`;
+  }
+
+  // Helper for age brackets that don't list a max dose
+  function doseStrNoMax(mg, freq) {
+    if (!wValid) {
+      return `<strong>${mg} mg/kg/dose ${freq}</strong>`;
+    }
+    const calc = Math.round(mg * w);
+    return `<strong>${mg} mg/kg/dose</strong> <span style="color:#e11d48; font-weight:bold;">(${calc} mg based on entered weight)</span> <strong>${freq}</strong>`;
+  }
+
+  return {
+    general: {
+      title: "General dosing, susceptible infection (non-CNS)",
+      content: `<strong>Infants, Children, and Adolescents:</strong> IV: ${doseStr(20, 'every 8 hours', 1000)}.<br><br>Higher doses or extended or continuous infusions may be needed for infections due to isolates with elevated MICs or in patients with critical illness or augmented renal clearance.`
+    },
+    anthrax: {
+      title: "Anthrax",
+      content: `Limited data available:<br>Note: Consult public health officials for event-specific recommendations; do not delay therapy.<br><br><strong>Cutaneous, without meningitis, treatment (alternative agent):</strong> Infants, Children, and Adolescents: IV: ${doseStr(20, 'every 8 hours', 2000)}. Treat for 7 to 10 days or until patient is clinically stable. If known or suspected aerosol exposure, transition to an appropriate oral agent for postexposure prophylaxis for a total of 60 days from exposure.<br><br><strong>Systemic, including meningitis, treatment:</strong> Infants, Children, and Adolescents: IV: ${doseStr(40, 'every 8 hours', 2000)}. Use as part of an appropriate combination regimen for ≥2 weeks; duration may be shortened and patient transitioned to oral therapy based on clinical response. Following completion of initial therapy, patients with a known or suspected aerosol exposure who are immunocompromised should transition to an appropriate oral agent for postexposure prophylaxis for a total of 60 days from onset of illness.`
+    },
+    cf: {
+      title: "Cystic fibrosis, pulmonary exacerbation",
+      content: `Limited data available:<br><br><strong>Traditional intermittent infusion method:</strong> Infants, Children, and Adolescents: IV: ${doseStr(40, 'every 8 hours', 2000)}.<br><br><strong>Extended infusion method:</strong> Children ≥8 years and Adolescents: IV: ${doseStr(40, 'every 8 hours infused over 3 hours', 2000)}. Dosing primarily based on a pharmacokinetic and pharmacodynamic study in pediatric patients with cystic fibrosis (n=30, 8 to 17 years of age); extended infusions were more likely to obtain targets as compared to traditional infusions for minimum inhibitory concentrations ≥1 mg/L.<br><br>Note: Use of the continuous infusion method to optimize exposure in cystic fibrosis has also been reported in adults, an adolescent, and pharmacokinetic modeling in both pediatric and adults.<br><br><strong>Duration of therapy:</strong> Treatment duration varies and is dependent on patient-specific factors including response to therapy. Typical duration is 10 to 14 days; some patients may require extended therapy (eg, 21 days).`
+    },
+    neutropenia: {
+      title: "Febrile neutropenia, empiric therapy",
+      content: `Limited data available:<br><br><strong>Infants, Children, and Adolescents:</strong> IV: ${doseStr(20, 'every 8 hours', 1000)}.`
+    },
+    iai: {
+      title: "Intra-abdominal infection, complicated",
+      content: `Note: IDSA guidelines recommend treatment duration of 4 to 7 days.<br><br><strong>Infants 1 to <3 months:</strong><br>• GA <32 weeks: IV: ${doseStrNoMax(20, 'every 8 hours')}.<br>• GA ≥32 weeks: IV: ${doseStrNoMax(30, 'every 8 hours')}.<br><br><strong>Infants ≥3 months, Children, and Adolescents:</strong> IV: ${doseStr(20, 'every 8 hours', 1000)}.`
+    },
+    melioidosis: {
+      title: "Melioidosis (Burkholderia pseudomallei infection)",
+      content: `Limited data available:<br><br><strong>Initial intensive therapy:</strong> Infants, Children, and Adolescents: IV: Initial: ${doseStr(25, 'every 8 hours', 1000)}. For patients with CNS involvement, a higher dose of ${doseStr(50, 'every 8 hours', 2000)} has also been suggested.<br><br>Duration of parenteral therapy for initial intensive therapy is typically ≥14 days, though a longer duration may be necessary depending on disease severity and site of infection; after initial intensive therapy, transition to oral eradication therapy.`
+    },
+    meningitis: {
+      title: "Meningitis",
+      content: `<strong>Infants (limited data available in infants <3 months of age), Children, and Adolescents:</strong> IV: ${doseStr(40, 'every 8 hours', 2000)}.<br><br>Duration should be individualized based on patient characteristics and response; treatment duration for gram-negative bacilli is a minimum of 10 to 14 days; although some experts recommend ≥21 days and at least 14 days after first negative cerebrospinal fluid culture.`
+    },
+    ssti: {
+      title: "Skin and soft tissue infection, complicated",
+      content: `<strong>Manufacturer's labeling:</strong> Infants ≥3 months, Children, and Adolescents: IV: ${doseStr(10, 'every 8 hours', 500)}.<br><br><strong>Severe or necrotizing infections:</strong> Infants, Children, and Adolescents: IV: ${doseStr(20, 'every 8 hours', 1000)}.`
+    }
+  };
+}
+
+// Function to update the UI when the pediatric indication dropdown changes
+function updatePediatricIndication(val) {
+  const w = parseFloat(document.getElementById('weight').value);
+  const data = getPediatricStandardDoses(w)[val];
+  const container = document.getElementById('pediatricIndicationContent');
+  if(container && data) {
+    container.innerHTML = `
+      <div style="margin-top: 0.8rem; padding: 1rem; background: #fff1f2; border-left: 4px solid #e11d48; border-radius: 6px;">
+        <h4 style="margin-top: 0; margin-bottom: 0.6rem; color: #9f1239; font-size: 1.05rem;">${data.title}</h4>
+        <div style="font-size: 0.92rem; color: #1f2937; line-height: 1.6;">
+            ${data.content}
+        </div>
+      </div>
+    `;
+  }
+}
+// --- END COMPLETE PEDIATRIC STANDARD DOSING DATA ---
+    const ageInput        = document.getElementById('age');
+    const genderInput     = document.getElementById('gender');
+    const heightInput     = document.getElementById('height');
+    const weightInput     = document.getElementById('weight');
+    const scrInput        = document.getElementById('scr');
+    const isObeseCheckbox = document.getElementById('isObese');
+    const bmiResult       = document.getElementById('bmiResult');
+    const adjbwResult     = document.getElementById('adjbwResult');
+    const calcBtn         = document.getElementById('calcBtn');
+    const clearBtn        = document.getElementById('clearBtn');
+    const resultCard      = document.getElementById('resultCard');
+    const crclSpan        = document.getElementById('crcl');
+    const formulaUsedSpan = document.getElementById('formulaUsed');
+    const doseSpan        = document.getElementById('dose');
+    const extraInfo       = document.getElementById('extraInfo');
+    const doseParagraph   = document.getElementById('doseParagraph');
+    const mcrclSection    = document.getElementById('mcrclSection');
+    const mResultLocal    = document.getElementById('mResultLocal');
+    const dialysisSelect  = document.getElementById('dialysisSelect');
+    const crclLabelSpan   = document.getElementById('crclLabel');
+
+    // ARC modal
+    const arcModal         = document.getElementById('arcModal');
+    const arcModalBox      = document.getElementById('arcModalBox');
+    const arcModalBody     = document.getElementById('arcModalBody');
+    const arcModalClose    = document.getElementById('arcModalClose');
+    const arcModalBackdrop = document.getElementById('arcModalBackdrop');
+
+    // Flag to avoid loops when we reset dialysis programmatically
+    let internalDialysisReset = false;
+
+    function openArcModal(html) {
+      arcModalBody.innerHTML = html;
+      arcModal.style.display = 'block';
+      arcModal.setAttribute('aria-hidden', 'false');
+      arcModalBox.focus();
+    }
+
+    function closeArcModal() {
+      arcModal.style.display = 'none';
+      arcModal.setAttribute('aria-hidden', 'true');
+    }
+
+    arcModalClose.addEventListener('click', closeArcModal);
+    arcModalBackdrop.addEventListener('click', closeArcModal);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeArcModal();
+    });
+
+    function updateBMI() {
+      const age    = parseFloat(ageInput.value);
+      const weight = parseFloat(weightInput.value);
+      const height = parseFloat(heightInput.value);
+      const gender = genderInput.value;
+
+      // Always visible labels
+      bmiResult.innerHTML     = 'BMI : —';
+      adjbwResult.textContent = 'AdjBW: —';
+      bmiResult.style.color   = '#000';
+      bmiResult.classList.remove('obese');
+
+      if (isNaN(age) || age < 18 || !weight || !height) {
+        isObeseCheckbox.checked  = false;
+        isObeseCheckbox.disabled = true;
+        isObeseCheckbox.title    = (isNaN(age) || age < 18)
+          ? 'Disabled for pediatrics'
+          : 'Check if clinically obese (BMI not calculated yet)';
+        return;
+      }
+
+      const bmi = weight / (height * height);
+      let category = '';
+      let color    = '#000';
+
+      if (bmi < 18.5)      category = 'Underweight';
+      else if (bmi < 25)   category = 'Normal weight';
+      else if (bmi < 30)   category = 'Overweight';
+      else {               category = 'Obese'; color = '#b91c1c'; }
+
+      bmiResult.innerHTML = `BMI : ${bmi.toFixed(1)} kg/m&sup2; – ${category}`;
+      bmiResult.style.color = color;
+
+      const obeseByBMI = bmi >= 30;
+      isObeseCheckbox.checked  = obeseByBMI;
+      isObeseCheckbox.disabled = true;
+      isObeseCheckbox.title    = 'Locked (derived from BMI)';
+
+      if (obeseByBMI) {
+        const inches = (height * 100) / 2.54;
+        const ibw = (gender === "male")
+          ? 50 + 2.3 * (inches - 60)
+          : 45.5 + 2.3 * (inches - 60);
+        const adjbw = ibw + 0.4 * (weight - ibw);
+        adjbwResult.textContent = `AdjBW: ${adjbw.toFixed(1)} kg`;
+      }
+    }
+
+    function markInvalid(field, placeholderText) {
+      field.style.borderColor = 'red';
+      field.placeholder = placeholderText;
+    }
+
+    function validateInputs() {
+      const age    = parseFloat(ageInput.value);
+      const height = parseFloat(heightInput.value);
+      const weight = parseFloat(weightInput.value);
+      const scr    = parseFloat(scrInput.value);
+      const dialysis = dialysisSelect.value;
+
+      const scrOptional = (dialysis === "hd" || dialysis === "pd" ||
+                           dialysis === "crrt" || dialysis === "pirrt");
+
+      // reset styles
+      ageInput.style.borderColor    = '#ccc';
+      heightInput.style.borderColor = '#ccc';
+      weightInput.style.borderColor = '#ccc';
+      scrInput.style.borderColor    = '#ccc';
+
+      ageInput.placeholder    = 'Enter age in years';
+      heightInput.placeholder = 'Enter height in meter';
+      weightInput.placeholder = 'Enter weight in kilogram';
+      scrInput.placeholder    = 'Enter serum creatinine in mg/dL';
+
+      let hasError = false;
+
+      if (!age || age < 0) {
+        markInvalid(ageInput, 'Age is required');
+        hasError = true;
+      }
+
+      if (!scrOptional && (!scr || scr <= 0)) {
+        markInvalid(scrInput, 'Serum creatinine is required');
+        hasError = true;
+      }
+
+      const isDialysisMode = ["hd", "pd", "crrt", "pirrt"].includes(dialysis);
+      if (!isDialysisMode) {
+        if ((age && age < 18) || isObeseCheckbox.checked) {
+          if (!height || height <= 0) {
+            markInvalid(heightInput, 'Height is required for pediatrics/obese');
+            hasError = true;
+          }
+        }
+      }
+
+      if (age && age < 18 && (!weight || weight <= 0)) {
+        markInvalid(weightInput, 'Weight is required for pediatric dosing');
+        hasError = true;
+      }
+
+      if (age && age >= 18 && (!weight || weight <= 0)) {
+        markInvalid(weightInput, 'Weight is required for adults');
+        hasError = true;
+      }
+
+      return !hasError;
+    }
+
+    function calculateDose() {
+      if (!validateInputs()) return;
+
+      doseSpan.parentElement.style.display = 'block';
+
+      const age        = parseFloat(ageInput.value);
+      const gender     = genderInput.value;
+      const weightVal  = parseFloat(weightInput.value);
+      const height     = parseFloat(heightInput.value);
+      const scr        = parseFloat(scrInput.value);
+      const isObese    = isObeseCheckbox.checked;
+      let   dialysis   = dialysisSelect.value;
+      const isPediatric   = age < 18;
+      const weightEntered = !isNaN(weightVal) && weightVal > 0;
+
+      // Step 1: calculate CrCl/eGFR
+      let crcl = 0;
+      let formulaUsed = "";
+
+      if (isPediatric) {
+        const heightCm = height * 100;
+        crcl = 0.413 * (heightCm / scr);
+        formulaUsed = "Schwartz Formula (for pediatrics)";
+      } else {
+        let adjWeight = weightVal;
+        if (isObese) {
+          const inches = (height * 100) / 2.54;
+          const ibw = (gender === "male")
+            ? 50 + 2.3 * (inches - 60)
+            : 45.5 + 2.3 * (inches - 60);
+          adjWeight = ibw + 0.4 * (weightVal - ibw);
+        }
+        const genderFactor = (gender === "male") ? 1 : 0.85;
+        crcl = ((140 - age) * adjWeight * genderFactor) / (72 * scr);
+        formulaUsed = "Cockcroft-Gault Formula";
+        if (isObese) {
+          formulaUsed += ' <span style="color:#b91c1c;">(Adjusted Body Weight used because patient is obese)</span>';
+        }
+      }
+
+      if (isPediatric) {
+        if (crclLabelSpan) crclLabelSpan.textContent = "Estimated eGFR (mL/min/1.73 m²):";
+      } else {
+        if (crclLabelSpan) crclLabelSpan.textContent = "Estimated CrCl (mL/min):";
+      }
+
+      const scrOptional = (dialysis === "hd" || dialysis === "pd" ||
+                           dialysis === "crrt" || dialysis === "pirrt" || dialysis === "arc");
+
+      if ((isNaN(crcl) || crcl <= 0) && scrOptional) {
+        crclSpan.textContent      = 'Enter serum creatinine to calculate CrCl';
+        formulaUsedSpan.textContent = 'None';
+      } else {
+        crclSpan.textContent      = crcl.toFixed(2);
+        formulaUsedSpan.innerHTML = formulaUsed;
+      }
+
+      // --- Adult ARC auto-detect (CrCl ≥ 130, adult, no dialysis) ---
+      if (!isPediatric && !isNaN(crcl) && crcl >= 130 && dialysisSelect.value === "none") {
+        dialysisSelect.value = "arc";
+        dialysis = "arc";
+        const noteSpan = extraInfo.querySelector("span");
+        if (noteSpan) {
+          noteSpan.innerHTML = `
+            High CrCl (≥ 130 mL/min) — Augmented renal clearance (ARC) is suspected.
+            An 8–24 hour measured urinary creatinine clearance is necessary to identify these patients.
+            If confirmed, <span id='arcInfoLink' style='color:#1d4ed8; text-decoration:underline; cursor:pointer;'>tap here to see ARC dosing</span>.
+            If ARC is ruled out, no dose adjustment required, use the standard dose.
+          `;
+        }
+        extraInfo.style.display = "block";
+      }
+
+      // --- Pediatric ARC auto-detect (eGFR ≥ 160, pedi, no dialysis) ---
+      if (isPediatric) {
+        const span = extraInfo.querySelector('span');
+        if (!isNaN(crcl) && crcl >= 130 && dialysis === 'none') {
+          // Switch to ARC mode for pediatrics as well
+          dialysisSelect.value = 'arc';
+          dialysis = 'arc';
+          if (span) {
+            span.innerHTML =
+              "High eGFR (≥ 130 mL/min/1.73 m²) — Augmented renal clearance (ARC) is suspected. " +
+              "An 8–24 hour measured urinary creatinine clearance is necessary to identify these patients. " +
+              "If confirmed, <span id='pedsArcLink' style='color:#1d4ed8; text-decoration:underline; cursor:pointer;'>tap here to see ARC dosing</span>. If ARC is ruled out, no dose adjustment required, use the standard dose.";
+          }
+          extraInfo.style.display = "block";
+        } else {
+          extraInfo.style.display = 'none';
+          if (span) span.textContent = '';
+        }
+      }
+
+      // Step 2: dose text
+      let doseHTML = "";
+
+      if (dialysis !== "none") {
+        const weightEnteredDial = !isNaN(weightVal) && weightVal > 0;
+
+        if (dialysis === "hd") {
+          doseHTML = isPediatric
+            ? (weightEnteredDial
+                ? '<span style="text-decoration:underline;">Daily dosing:</span> ' +
+                  `<span style="color:red;font-weight:bold">${Math.round(25 * weightVal)} mg every 24 hours</span>` +
+                  '<br><span style="text-decoration:underline;">Every-48-hour dosing:</span> ' +
+                  `<span style="color:red;font-weight:bold">${Math.round(40 * weightVal)} mg every 48 hours</span>` +
+                  '<br><br><span style="color:gray;font-style:italic;">Note: On dialysis days, administer dose after dialysis. Usual maximum dose is 2,000 mg/dose; lower maximum doses may be appropriate for some indications.</span>'
+                : '<span style="text-decoration:underline;">Daily dosing:</span> ' +
+                  '<span style="color:red;font-weight:bold">25 mg/kg every 24 hours</span>' +
+                  '<br><span style="text-decoration:underline;">Every-48-hour dosing:</span> ' +
+                  '<br><span style="color:red;font-weight:bold">40 mg/kg every 48 hours</span>' +
+                  '<br><br><span style="color:gray;font-style:italic;">Note: On dialysis days, administer dose after dialysis. Usual maximum dose is 2,000 mg/dose; lower maximum doses may be appropriate for some indications.</span>')
+            : '<span style="color:red;font-weight:bold">500 mg every 24 hours</span> ' +
+              '<span style="color:black;font-weight:normal">If the usual recommended dose is 1 g every 8 hours </span>' +
+              '<span style="color:black;font-weight:normal">consider </span>' +
+              '<span style="color:red;font-weight:bold">1 g every 24 hours or preferably 500 mg every 12 hours</span> ' +
+              '<span style="color:black;font-weight:normal">If the usual recommended dose is 2 g every 8 hours</span><br><br>';
+        }
+
+        if (dialysis === "pd") {
+          doseHTML = isPediatric
+            ? (weightEnteredDial
+                ? `<span style="color:red;font-weight:bold">${Math.round(10 * weightVal)}–${Math.round(20 * weightVal)} mg</span> every 24 hours; maximum dose: 1000mg/dose`
+                : '<span style="color:red;font-weight:bold">10-20 mg/kg</span> every 24 hours; maximum dose: 1000mg/dose')
+            : '<span style="color:red;font-weight:bold">500 mg every 24 hours</span> ' +
+              '<span style="color:black;font-weight:normal">If the usual recommended dose is 1 g every 8 hours </span>' +
+              '<span style="color:black;font-weight:normal">consider </span>' +
+              '<span style="color:red;font-weight:bold">1 g every 24 hours or 500 mg every 12 hours</span> ' +
+              '<span style="color:black;font-weight:normal">If the usual recommended dose is 2 g every 8 hours</span><br><br>';
+        }
+
+        if (dialysis === "crrt") {
+          doseHTML = isPediatric
+            ? (weightEnteredDial
+                ? `<span style="color:red;font-weight:bold">${Math.round(20 * weightVal)} mg</span> every 8 hours; higher doses of <span style="color:red;font-weight:bold">${Math.round(40 * weightVal)} mg</span> every 8 hours may be necessary in some situation (eg. when MIC is more or equal to 4mg/L); maximum dose: 2000mg/dose`
+                : '<span style="color:red;font-weight:bold">20 mg/kg</span> every 8 hours; higher doses of <span style="color:red;font-weight:bold">40 mg/kg</span> every 8 hours may be necessary in some situation (eg. when MIC is more or equal to 4mg/L); maximum dose: 2000mg/dose')
+            : '<span style="color:black;font-weight:normal;text-decoration:underline">Intermittent Infusion Method: </span>' +
+              '<span style="color:red;font-weight:bold">1g loading dose followed by 500 mg to 1 g every 8 hours</span><br><br>' +
+              '<span style="color:black;font-weight:normal;text-decoration:underline">Continuous Infusion Method: </span>' +
+              '<span style="color:red;font-weight:bold">1g loading dose </span>' +
+              '<span style="color:black;font-weight:normal">(infused over 30 minutes) followed by </span>' +
+              '<span style="color:red;font-weight:bold">1 g </span>' +
+              '<span style="color:black;font-weight:normal">(infused over 12 hours) </span>' +
+              '<span style="color:red;font-weight:normal;font-weight:bold">every 12 hours</span><br><br>';
+        }
+
+        if (dialysis === "pirrt") {
+          doseHTML = isPediatric
+            ? '<span style="color:black">PIRRT dosing data for pediatric is very limited (No recommendation).</span>'
+            : '<span style="color:red;font-weight:bold">1 g every 12 hours </span>' +
+              '<span style="color:black;font-weight:normal">consider </span>' +
+              '<span style="color:red;font-weight:bold">2 g every 8 hours</span> ' +
+              '<span style="color:black;font-weight:normal;text-decoration:underline">if residual diuresis ≥ 300 mL/day</span><br><br>';
+        }
+
+        if (dialysis === "arc") {
+          doseSpan.parentElement.style.display = 'none';
+          doseHTML = "";
+        }
+      } else {
+        // no dialysis
+        function calcDose(mgPerKg) {
+          return Math.round(mgPerKg * weightVal);
+        }
+
+        if (isPediatric) {
+          if (crcl > 50) {
+            // Generate the Dropdown Menu and Default Content using the pediatric data
+            const w = weightVal;
+            const defaultData = getPediatricStandardDoses(w)['general'];
+
+            doseHTML =
+              `<span style="color:red;font-weight:bold">No dosage adjustment necessary. Select an indication to view standard clinical dosing:</span><br><br>` +
+              `<select id="pediatricInd" onchange="updatePediatricIndication(this.value)" style="width:100%; padding: 0.6rem; border-radius: 6px; border: 1px solid #9ca3af; font-weight: bold; background-color: #f9fafb; cursor: pointer; color: #9f1239;">
+                <option value="general">General dosing, susceptible infection (non-CNS)</option>
+                <option value="anthrax">Anthrax</option>
+                <option value="cf">Cystic fibrosis, pulmonary exacerbation</option>
+                <option value="neutropenia">Febrile neutropenia, empiric therapy</option>
+                <option value="iai">Intra-abdominal infection, complicated</option>
+                <option value="melioidosis">Melioidosis</option>
+                <option value="meningitis">Meningitis</option>
+                <option value="ssti">Skin and soft tissue infection, complicated</option>
+              </select>` +
+              `<div id="pediatricIndicationContent">
+                <div style="margin-top: 0.8rem; padding: 1rem; background: #fff1f2; border-left: 4px solid #e11d48; border-radius: 6px;">
+                  <h4 style="margin-top: 0; margin-bottom: 0.6rem; color: #9f1239; font-size: 1.05rem;">${defaultData.title}</h4>
+                  <div style="font-size: 0.92rem; color: #1f2937; line-height: 1.6;">
+                      ${defaultData.content}
+                  </div>
+                </div>
+              </div>`;
+          } else if (crcl >= 26) {
+            doseHTML = weightEntered
+              ? `<span style="color:red;font-weight:bold">${calcDose(20)} mg every 12 hours</span> <span style="color:black;"> if the usual recommended dose is 20 mg/kg/dose every 8 hours</span><br>` +
+                `<span style="color:black;">Consider <span style="color:red;font-weight:bold">${calcDose(40)} mg every 12 hours</span> if the usual recommended dose is 40 mg/kg/dose every 8 hours</span>`
+              : '<span style="color:red;font-weight:bold">20 mg/kg every 12 hours</span> <span style="color:black;"> if the usual recommended dose is 20 mg/kg/dose every 8 hours</span><br>' +
+                '<span style="color:black;">Consider <span style="color:red;font-weight:bold">40 mg/kg every 12 hours</span> if the usual recommended dose is 40 mg/kg/dose every 8 hours</span>';
+          } else if (crcl >= 10) {
+            doseHTML = weightEntered
+              ? `<span style="color:red;font-weight:bold">${calcDose(10)} mg every 12 hours</span> <span style="color:black;"> if the usual recommended dose is 20 mg/kg/dose every 8 hours</span><br>` +
+                `<span style="color:black;">Consider <span style="color:red;font-weight:bold">${calcDose(20)} mg every 12 hours</span> if the usual recommended dose is 40 mg/kg/dose every 8 hours</span>`
+              : '<span style="color:red;font-weight:bold">10 mg/kg every 12 hours</span> <span style="color:black;"> if the usual recommended dose is 20 mg/kg/dose every 8 hours</span><br>' +
+                '<span style="color:black;">Consider <span style="color:red;font-weight:bold">20 mg/kg every 12 hours</span> if the usual recommended dose is 40 mg/kg/dose every 8 hours</span>';
+          } else {
+            doseHTML = weightEntered
+              ? `<span style="color:red;font-weight:bold">${calcDose(10)} mg every 24 hours</span> <span style="color:black;"> if the usual recommended dose is 20 mg/kg/dose every 8 hours</span><br>` +
+                `<span style="color:black;">Consider <span style="color:red;font-weight:bold">${calcDose(20)} mg every 24 hours</span> if the usual recommended dose is 40 mg/kg/dose every 8 hours</span>`
+              : '<span style="color:red;font-weight:bold">10 mg/kg every 24 hours</span> <span style="color:black;"> if the usual recommended dose is 20 mg/kg/dose every 8 hours</span><br>' +
+                '<span style="color:black;">Consider <span style="color:red;font-weight:bold">20 mg/kg every 24 hours</span> if the usual recommended dose is 40 mg/kg/dose every 8 hours</span>';
+          }
+        } else {
+          // adults
+          if (crcl > 50) {
+            // Generate the Dropdown Menu and Default Content using the exact UpToDate data
+            const defaultData = adultStandardDoses['general'];
+
+            doseHTML =
+              `<span style="color:red;font-weight:bold">No dosage adjustment necessary. Select an indication to view standard clinical dosing:</span><br><br>` +
+              `<select id="adultInd" onchange="updateAdultIndication(this.value)" style="width:100%; padding: 0.6rem; border-radius: 6px; border: 1px solid #9ca3af; font-weight: bold; background-color: #f9fafb; cursor: pointer; color: #1e40af;">
+                <option value="general">Dosage Guidance & Usual Range</option>
+                <option value="anthrax">Anthrax, systemic, treatment</option>
+                <option value="bloodstream">Bloodstream infection</option>
+                <option value="cf">Cystic fibrosis, acute pulmonary exacerbation</option>
+                <option value="dfi">Diabetic foot infection, moderate to severe</option>
+                <option value="iai">Intra-abdominal infection</option>
+                <option value="intracranial">Intracranial abscess & spinal epidural abscess</option>
+                <option value="melioidosis">Melioidosis or glanders</option>
+                <option value="meningitis">Meningitis, bacterial</option>
+                <option value="neutropenic">Neutropenic fever, empiric therapy</option>
+                <option value="nocardiosis">Nocardiosis, severe</option>
+                <option value="osteomyelitis">Osteomyelitis and/or discitis</option>
+                <option value="peritonitis_pd">Peritonitis, treatment (peritoneal dialysis)</option>
+                <option value="pneumonia">Pneumonia</option>
+                <option value="pji">Prosthetic joint infection</option>
+                <option value="sepsis">Sepsis and septic shock</option>
+                <option value="ssti">Skin and soft tissue infection, moderate to severe</option>
+                <option value="sbp">Spontaneous bacterial peritonitis</option>
+                <option value="uti">Urinary tract infection, complicated</option>
+              </select>` +
+              `<div id="adultIndicationContent">
+                <div style="margin-top: 0.8rem; padding: 1rem; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 6px;">
+                  <h4 style="margin-top: 0; margin-bottom: 0.6rem; color: #1e40af; font-size: 1.05rem;">${defaultData.title}</h4>
+                  <div style="font-size: 0.92rem; color: #1f2937; line-height: 1.6;">
+                      ${defaultData.content}
+                  </div>
+                </div>
+              </div>`;
+          } else if (crcl >= 26) {
+            doseHTML =
+              '<span style="color:red;font-weight:bold">1 g every 12 hours</span> <span style="color:black;">If the usual recommended dose is 1 g every 8 hours</span><br>' +
+              '<span style="color:black;">Consider <span style="color:red;font-weight:bold">2 g every 12 hours</span> If the usual recommended dose is 2 g every 8 hours</span>';
+          } else if (crcl >= 10) {
+            doseHTML =
+              '<span style="color:red;font-weight:bold">500 mg every 12 hours</span> <span style="color:black;"> If the usual recommended dose is 1 g every 8 hours</span><br>' +
+              '<span style="color:black;">Consider <span style="color:red;font-weight:bold">1 g every 12 hours</span> If the usual recommended dose is 2 g every 8 hours</span>';
+          } else {
+            doseHTML =
+              '<span style="color:red;font-weight:bold">500 mg every 24 hours</span> <span style="color:black;"> If the usual recommended dose is 1 g every 8 hours</span><br>' +
+              '<span style="color:black;">Consider <span style="color:red;font-weight:bold">1 g every 24 hours or 500 mg every 12 hours</span> If the usual recommended dose is 2 g every 8 hours</span>';
+          }
+        }
+      }
+// Check if ARC is active (meaning dialysis mode is set to 'arc')
+      if (dialysis === "arc") {
+        doseParagraph.style.display = 'none';
+        mcrclSection.style.display = 'block';
+      } else {
+        doseParagraph.style.display = 'block';
+        mcrclSection.style.display = 'none';
+        mResultLocal.style.display = 'none';
+      }
+      doseSpan.innerHTML = doseHTML;
+      resultCard.style.display = 'block';
+    }
+
+    function resetFieldStyle(field, defaultPlaceholder) {
+      field.addEventListener('input', () => {
+        field.style.borderColor = '#ccc';
+        field.placeholder = defaultPlaceholder;
+      });
+    }
+
+    resetFieldStyle(ageInput, 'Enter age in years');
+    resetFieldStyle(heightInput, 'Enter height in meter');
+    resetFieldStyle(scrInput, 'Enter serum creatinine in mg/dL');
+    resetFieldStyle(weightInput, 'Enter weight in kilogram');
+
+    weightInput.addEventListener('input', updateBMI);
+    heightInput.addEventListener('input', updateBMI);
+
+    // Clear adult ARC message and reset dropdown when age changes (adult/peds switch)
+    [ageInput, weightInput, heightInput, scrInput, genderInput].forEach(field => {
+      field.addEventListener('change', () => {
+        const ageVal = parseFloat(ageInput.value);
+        const shouldReset =
+          (!isNaN(ageVal) && ageVal >= 18) ||
+          isNaN(ageVal) ||
+          ageVal < 18;
+
+        if (shouldReset) {
+          extraInfo.style.display = 'none';
+          const span = extraInfo.querySelector('span');
+          if (span) span.textContent = '';
+
+          if (dialysisSelect.value !== 'none') {
+            internalDialysisReset = true;
+            dialysisSelect.value = 'none';
+            dialysisSelect.dispatchEvent(new Event('change'));
+            internalDialysisReset = false;
+          }
+        }
+      });
+    });
+
+    // Auto-clear results and reset dialysis when patient data changes
+    [ageInput, weightInput, heightInput, scrInput, genderInput].forEach(input => {
+      const onEdit = () => {
+        // hide results
+        resultCard.style.display = 'none';
+        doseSpan.innerHTML       = '';
+        crclSpan.textContent     = '';
+        formulaUsedSpan.textContent = '';
+
+        // hide notes
+        extraInfo.style.display = 'none';
+        const span = extraInfo.querySelector('span');
+        if (span) span.textContent = '';
+
+        // Reset dialysis to "Not on Dialysis"
+        if (dialysisSelect.value !== 'none') {
+          internalDialysisReset = true;
+          dialysisSelect.value  = 'none';
+          dialysisSelect.dispatchEvent(new Event('change'));
+          internalDialysisReset = false;
+        }
+      };
+
+      input.addEventListener('input', onEdit);
+      input.addEventListener('change', onEdit);
+    });
+
+    // Calculate & Clear buttons
+    calcBtn.addEventListener('click', calculateDose);
+
+    clearBtn.addEventListener('click', () => {
+      document.getElementById('mTime').value = '';
+      document.getElementById('mVol').value = '';
+      document.getElementById('mUcr').value = '';
+      document.getElementById('mScrLocal').value = '';
+      mResultLocal.style.display = 'none';
+      ageInput.value    = '';
+      genderInput.value = 'male';
+      heightInput.value = '';
+      weightInput.value = '';
+      scrInput.value    = '';
+
+      dialysisSelect.value = 'none';
+
+      isObeseCheckbox.checked  = false;
+      isObeseCheckbox.disabled = false;
+      isObeseCheckbox.title    = '';
+
+      bmiResult.innerHTML      = 'BMI : —';
+      adjbwResult.textContent  = 'AdjBW: —';
+      bmiResult.className      = '';
+      bmiResult.style.color    = '#000';
+
+      resultCard.style.display = 'none';
+      doseSpan.innerHTML       = '';
+      crclSpan.textContent     = '';
+      formulaUsedSpan.textContent = '';
+
+      extraInfo.style.display = 'none';
+      const span = extraInfo.querySelector('span');
+      if (span) span.textContent = '';
+
+      ageInput.style.borderColor    = '#ccc';
+      heightInput.style.borderColor = '#ccc';
+      scrInput.style.borderColor    = '#ccc';
+      weightInput.style.borderColor = '#ccc';
+
+      ageInput.placeholder    = 'Enter age in years';
+      heightInput.placeholder = 'Enter height in meter';
+      scrInput.placeholder    = 'Enter serum creatinine in mg/dL';
+      weightInput.placeholder = 'Enter weight in kilogram';
+    });
+
+    // Age changes (peds vs adult) → BMI / obese logic
+    ageInput.addEventListener('input', () => {
+      const age = parseFloat(ageInput.value);
+      const isPediatric = age < 18;
+
+      isObeseCheckbox.disabled = isPediatric;
+      if (isPediatric) {
+        bmiResult.innerHTML     = 'BMI : —';
+        adjbwResult.textContent = 'AdjBW: —';
+        isObeseCheckbox.checked = false;
+        return;
+      }
+
+      const weight = parseFloat(weightInput.value);
+      const height = parseFloat(heightInput.value);
+      if (weight && height) updateBMI();
+    });
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const age = parseFloat(ageInput.value);
+      if (!isNaN(age)) {
+        const isPediatric = age < 18;
+        isObeseCheckbox.disabled = isPediatric;
+      }
+    });
+
+    // Dialysis mode changes (manual) + manual ARC re-check when user sets back to "none"
+    dialysisSelect.addEventListener('change', (e) => {
+      const noteSpan = extraInfo.querySelector('span');
+
+      if (internalDialysisReset) {
+        // Programmatic change, just clean note and exit
+        extraInfo.style.display = 'none';
+        if (noteSpan) noteSpan.textContent = '';
+        return;
+      }
+
+      // If user chooses any dialysis mode → hide note and stop
+      if (dialysisSelect.value !== 'none') {
+        extraInfo.style.display = 'none';
+        if (noteSpan) noteSpan.textContent = '';
+        return;
+      }
+
+      // Only re-check ARC when the USER manually changes dropdown to "Not on Dialysis"
+      if (!e.isTrusted) return;
+
+      const age    = parseFloat(ageInput.value);
+      const scr    = parseFloat(scrInput.value);
+      const weight = parseFloat(weightInput.value);
+      const gender = genderInput.value;
+
+      // Only adults for this re-check
+      if (isNaN(age) || age < 18 || isNaN(weight) || isNaN(scr) || scr <= 0) {
+        extraInfo.style.display = 'none';
+        if (noteSpan) noteSpan.textContent = '';
+        return;
+      }
+
+      const crcl = ((140 - age) * weight * (gender === "male" ? 1 : 0.85)) / (72 * scr);
+
+      if (crcl >= 130) {
+        dialysisSelect.value = "arc";
+        if (noteSpan) {
+          noteSpan.innerHTML =
+            "High CrCl (≥ 130 mL/min) — Augmented renal clearance (ARC) is suspected. " +
+              "An 8–24 hour measured urinary creatinine clearance is necessary to identify these patients. " +
+              "If confirmed, <span id='arcInfoLink' style='color:#1d4ed8; text-decoration:underline; cursor:pointer;'>tap here to see ARC dosing</span>.If ARC is ruled out, no dose adjustment required, use the standard dose.";
+        }
+        extraInfo.style.display = "block";
+      } else {
+        extraInfo.style.display = 'none';
+        if (noteSpan) noteSpan.textContent = '';
+      }
+    });
+
+    // ARC info link (adult)
+    document.addEventListener('click', (event) => {
+      if (event.target && event.target.id === 'arcInfoLink') {
+        openArcModal(`
+          <p><strong>Augmented Renal Clearance (ARC)</strong> means the kidneys are
+          eliminating drugs faster than usual. In adults, ARC is commonly defined as
+          creatinine clearance (CrCl) ≥ 130 mL/min.</p>
+
+          <p><strong>Adult ARC Dosing Recommendations:</strong></p>
+          <p><u>Extended Infusion Method:</u><br>
+          <strong>2 g loading dose</strong> (infused over 30 minutes) then <strong>2 g</strong> (infused over 3 hours) every 8 hours.</p>
+
+          <p><u>Continuous Infusion Method:</u><br>
+          <strong>1 g loading dose</strong> (infused over 30 minutes) followed by <strong>6 g/day</strong> infused over 24 hours (administered either as <strong>2 g every 8 hours over 8 hours</strong> or <strong>3 g every 12 hours over 12 hours</strong>).</p>
+
+          <p style="font-size:0.85rem; color:gray; font-style:italic; margin-top:12px;">
+          ARC may lead to subtherapeutic levels. Extended infusions and/or higher total daily doses may be considered per published references.
+          </p>
+        `);
+      }
+    });
+
+    // Pediatric ARC dosing link
+    document.addEventListener('click', (event) => {
+      if (event.target && event.target.id === 'pedsArcLink') {
+        const w = parseFloat(weightInput.value);
+        const weightEntered = !isNaN(w) && w > 0;
+
+        const bodyHTML = weightEntered
+          ? (
+            `<p><strong>Pediatric ARC dosing (weight-based)</strong></p>
+             <p><u>Extended infusion (preferred):</u>
+             <br><strong>${Math.round(30*w)}–${Math.round(40*w)} mg</strong> infused over 4 hours every 8 hours
+             <br>or <strong>${Math.round(30*w)} mg</strong> infused over 3 hours every 6 hours.</p>
+             <p><u>Traditional intermittent infusion (30 min):</u>
+             <br><strong>${Math.round(40*w)} mg</strong> every 6 hours.</p>
+             <p style="color:gray;font-style:italic;">Usual maximum dose: 2,000 mg/dose.</p>`
+          )
+          : (
+            `<p><strong>Pediatric ARC dosing</strong></p>
+             <p><u>Extended infusion (preferred):</u>
+             <br><strong>30–40 mg/kg/dose</strong> infused over 4 hours every 8 hours
+             <br>or <strong>30 mg/kg/dose</strong> infused over 3 hours every 6 hours.</p>
+             <p><u>Traditional intermittent infusion (30 min):</u>
+             <br><strong>40 mg/kg/dose</strong> every 6 hours.</p>
+             <p style="color:gray;font-style:italic;">Usual maximum dose: 2,000 mg/dose.</p>`
+          );
+
+        openArcModal(bodyHTML);
+      }
+    });
+    // Function for the Local mCrCl mini-calculator
+    function calculateMCrClLocal() {
+      const timeHours = parseFloat(document.getElementById('mTime').value);
+      const vol = parseFloat(document.getElementById('mVol').value);
+      const ucr = parseFloat(document.getElementById('mUcr').value);
+      const scr = parseFloat(document.getElementById('mScrLocal').value);
+
+      const w = parseFloat(weightInput.value);
+      const h = parseFloat(heightInput.value);
+
+      document.getElementById('mVol').style.borderColor = '#ccc';
+      document.getElementById('mUcr').style.borderColor = '#ccc';
+      document.getElementById('mScrLocal').style.borderColor = '#ccc';
+
+      let hasError = false;
+      if (!vol || vol <= 0) { document.getElementById('mVol').style.borderColor = 'red'; hasError = true; }
+      if (!ucr || ucr <= 0) { document.getElementById('mUcr').style.borderColor = 'red'; hasError = true; }
+      if (!scr || scr <= 0) { document.getElementById('mScrLocal').style.borderColor = 'red'; hasError = true; }
+
+      if (hasError) return;
+
+      const timeMins = timeHours * 60;
+      const mCrCl = (ucr * vol) / (scr * timeMins);
+
+      document.getElementById('localMCrClVal').textContent = mCrCl.toFixed(1);
+
+      let normCrCl = mCrCl;
+      let bsaHtml = "<span style='color:red; font-size:0.8rem;'>Need Height/Weight to normalize</span>";
+
+      if (!isNaN(w) && w > 0 && !isNaN(h) && h > 0) {
+        const heightCm = h * 100;
+        const bsa = Math.sqrt((heightCm * w) / 3600);
+        bsaHtml = `${bsa.toFixed(2)} m&sup2;`;
+        normCrCl = mCrCl * (1.73 / bsa);
+      } else {
+        normCrCl = mCrCl;
+      }
+
+      document.getElementById('localMBsaVal').innerHTML = bsaHtml;
+      document.getElementById('localMNormVal').textContent = normCrCl.toFixed(1);
+
+      const diagElem = document.getElementById('localMArcDiag');
+      if (normCrCl >= 130) {
+        diagElem.innerHTML = "<span style='color: #b91c1c;'>ARC CONFIRMED:</span> Normalized CrCl is ≥ 130.<br><span style='font-size:0.85rem; font-weight:normal; color:#4b5563;'>Tap the blue ARC link above for dosing.</span>";
+      } else {
+        diagElem.innerHTML = "<span style='color: #047857;'>ARC RULED OUT:</span> Normalized CrCl is < 130.<br><span style='font-size:0.85rem; font-weight:normal; color:#4b5563;'>Use standard meropenem dosing.</span>";
+      }
+
+      mResultLocal.style.display = 'block';
+    }
+</script>
+</body>
+</html>
